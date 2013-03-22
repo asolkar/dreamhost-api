@@ -1,0 +1,2 @@
+api_key: APIKEY
+records: ['service1.myhome.com','service2.myhome.com']
