@@ -11,11 +11,13 @@ class DreamhostAPI
     @apikey = apikey
   end
 
-  def request(resource)
-    uuid = SecureRandom.uuid
+  def set_config(config)
+    @config = config
+  end
 
+  def request(resource)
     url = @api_url + '?key=' + @apikey +
-          '&unique_id=' + uuid + '&format=yaml&' +
+          '&unique_id=' + SecureRandom.uuid + '&format=yaml&' +
           resource
 
     uri = URI.parse(url)
@@ -25,7 +27,8 @@ class DreamhostAPI
     response = http.get(uri.request_uri)
 
     yaml_data = YAML::load_stream(response.body)
-    return yaml_data[0]['data']
+    # puts YAML::dump(yaml_data)
+    return yaml_data[0]
   end
 
   #
@@ -39,7 +42,7 @@ class DreamhostAPI
   # Macros
   #
   def macros
-    Macros.new(self)
+    Macros.new(self, @config)
   end
   #
   # Helpers
