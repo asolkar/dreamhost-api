@@ -40,11 +40,11 @@ class DreamhostAPI
   end
 
   def request(resource)
-    url = @api_url + '?key=' + @apikey +
-          '&unique_id=' + SecureRandom.uuid + '&format=yaml&' +
-          resource
+    uri = URI(@api_url)
+    uri.query = URI.encode_www_form({ :key => @apikey,
+                                      :unique_id => SecureRandom.uuid,
+                                      :format => 'yaml'}.merge(resource))
 
-    uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE # read into this
