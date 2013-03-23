@@ -26,6 +26,7 @@ require 'net/http'
 require 'securerandom'
 require 'yaml'
 
+require 'dreamhost_api/record'
 require 'dreamhost_api/dns_api'
 require 'dreamhost_api/macros'
 
@@ -51,7 +52,6 @@ class DreamhostAPI
     response = http.get(uri.request_uri)
 
     yaml_data = YAML::load_stream(response.body)
-    # puts YAML::dump(yaml_data)
     return yaml_data[0]
   end
 

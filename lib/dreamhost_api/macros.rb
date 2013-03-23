@@ -33,23 +33,25 @@ class DreamhostAPI
     def update_records()
       return_value = 'records_updated'
 
-      @new_ip = @ip
-      if @config['update_records']['new_ip']
-        @new_ip = @config['update_records']['new_ip']
-      end
-
-      response = @api.dns.list_records
+      of_type = DreamhostAPI::Record.new('name','value','A', '1');
+      response = @api.dns.list_records(of_type)
 
       if response['result'] == 'success'
         @records = response['data']
-        @records.each { |record|
-          if @config['update_records']['records'].include?(record['record'])
-            if record['editable'] == 1
-              if record['value'] != @new_ip
-                puts "#{record['record']} : #{record['value']} already is #{@new_ip}"
+        @cfg_records = @config['update_records']['records']
+
+        @records.each { |api_record|
+          record = DreamhostAPI::Record.new_with_data(api_record)
+          if record.editable == 1
+            cfg_data = @cfg_records.select{|rec| rec['name'] == record.name}.first
+            cfg_record = DreamhostAPI::Record.new_with_data(cfg_data)
+
+            if cfg_record
+              if record.value == cfg_record.value
+                puts "#{record.name} : #{record.value} already is #{cfg_record.value}"
               else
-                puts "Changing #{record['record']} : #{record['value']} -> #{@new_ip}"
-                status = update_record(record)
+                puts "Changing #{record.name} : #{record.value} -> #{cfg_record.value}"
+                status = update_record(cfg_record)
                 if status != 'record_updated'
                   puts "  ERROR! Failed to update record - #{status}"
                   return_value = 'one_or_more_record_update_failed'
@@ -70,17 +72,17 @@ class DreamhostAPI
 
       response = @api.dns.remove_record(record)
       if response['result'] == "success"
-        puts "    Info! #{record['record']} : #{record['value']} removed - #{response['data']}"
+        puts "    Info! #{record.name} : #{record.value} removed - #{response['data']}"
       else
-        puts "    ERROR! #{record['record']} : #{record['value']} not removed properly - #{response['result']} - #{response['data']}"
+        puts "    ERROR! #{record.name} : #{record.value} not removed properly - #{response['result']} - #{response['data']}"
         return 'record_update_failed_at_remove'
       end
 
       response = @api.dns.add_record(record)
       if response['result'] == "success"
-        puts "    Info! #{record['record']} : #{@new_ip} added - #{response['data']}"
+        puts "    Info! #{record.name} : #{record.value} added - #{response['data']}"
       else
-        puts "    ERROR! #{record['record']} : #{@new_ip} not added properly - #{response['result']} - #{response['data']}"
+        puts "    ERROR! #{record.name} : #{record.value} not added properly - #{response['result']} - #{response['data']}"
         return 'record_update_failed_at_add'
       end
 

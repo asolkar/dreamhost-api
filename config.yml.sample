@@ -1,2 +1,7 @@
 api_key: APIKEY
-records: ['service1.myhome.com','service2.myhome.com']
+update_records:
+  records:
+    - name: service1.myhome.com
+      value: 23.135.13.423
+    - name: service2.myhome.com
+      value: 23.135.13.423

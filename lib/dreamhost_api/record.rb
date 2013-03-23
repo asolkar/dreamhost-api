@@ -22,29 +22,46 @@
 #
 # -----
 class DreamhostAPI
-  class DnsAPI
-    def initialize(api)
-      @api = api
+  class Record
+    attr_accessor :name, :value, :type, :editable
+
+    def self.new_with_data(data)
+      unless data
+        return nil
+      end
+
+      record = allocate
+
+      name = data['name'] ? data['name'] : data['record']
+      value = DreamhostAPI::get_my_ip
+      type = 'A'
+      editable = '1'
+
+      if data['value']
+        value = data['value']
+      end
+      if data['type']
+        type = data['type']
+      end
+      if data['editable']
+        editable = data['editable']
+      end
+
+      record.initialize_record(name, value, type, editable)
+
+      record
     end
 
-    def list_records(record)
-      return @api.request({ :cmd => 'dns-list_records',
-                            :type => record.type,
-                            :editable => record.editable});
+    def initialize(name, value, type='A', editable='1')
+      @name = name
+      @value = value
+      @type = type
+      @editable = editable
     end
 
-    def remove_record(record)
-      return @api.request({ :cmd => 'dns-remove_record',
-                            :type => record.type,
-                            :record => record.name,
-                            :value => record.value})
+    def initialize_record(name, value, type='A', editable='1')
+      initialize(name, value, type, editable)
     end
 
-    def add_record(record)
-      return @api.request({ :cmd => 'dns-add_record',
-                            :type => record.type,
-                            :record => record.name,
-                            :value => record.value})
-    end
   end
 end
